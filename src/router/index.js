@@ -18,50 +18,51 @@ NProgress.configure({
       (3) ：icon 路由对应图标的class 或其他实现方式的图标（默认不配置）
       (4) ：name 路由对应的名称，用做呈现
       (5) : p 路由所需要的权限
-      
-
 */
 var routes = [
   {
+    path: "/",
+    component: main,
+    meta: { hidden: true, name: "首页", icon: "el-icon-star-on" }
+  },
+  {
     path: "/login",
-    name: "login",
+    hidden: true,
+    meta: { hidden: true },
     component: () => import("@/views/login.vue")
   },
   {
-    path: "/signle",
+    path: "/single",
     component: main,
-    meta: { name: "独立路由", single: true, icon: "el-icon-menu" },
+    meta: {
+      name: "独立路由",
+      single: true,
+      icon: "el-icon-menu"
+    },
     children: [
       {
         path: "",
-        name: "signle",
         component: () => import("@/views/home.vue")
-        // meta: {p:"111"}, //独立路由权限需要加到子路由中
       }
     ]
   },
   {
-    path: "/",
-    name: "main",
+    path: "/common",
     component: main,
-    meta: { name: "常用", icon: "el-icon-star-on" },
-    redirect: "/home",
+    meta: { name: "通用", icon: "el-icon-star-on" },
     children: [
       {
         path: "/home",
-        name: "home",
         component: () => import("@/views/home.vue"),
-        meta: { name: "常用" }
+        meta: { name: "首页1" }
       },
       {
-        path: "/table",
-        name: "table",
+        path: "/common/table",
         meta: { name: "表格" },
         component: () => import("@/views/table.vue")
       },
       {
-        path: "/form",
-        name: "form",
+        path: "/common/form",
         meta: { name: "表单" },
         component: () => import("@/views/form.vue")
       }
@@ -69,19 +70,16 @@ var routes = [
   },
   {
     path: "/rights",
-    name: "rights",
     component: main,
     meta: { name: "权限控制", icon: "el-icon-setting" },
     children: [
       {
         path: "/hasRight",
-        name: "hasRight",
         component: () => import("@/views/home.vue"),
         meta: { name: "有权限" }
       },
       {
         path: "/noRight",
-        name: "noRight",
         component: () => import("@/views/home.vue"),
         meta: { name: "无权限", p: "123asdad" }
       }
@@ -89,21 +87,43 @@ var routes = [
   },
   {
     path: "/level",
-    name: "level",
     component: main,
     meta: { name: "level1" },
     children: [
       {
         path: "/level1-1",
-        name: "level1-1",
         meta: { name: "层级1-1" },
-        component: () => import("@/components/level.vue")
+        component: () => import("@/components/level.vue"),
+        children: [
+          {
+            path: "/level1-1-1",
+            meta: { name: "层级1-1-1" },
+            component: () => import("@/components/level.vue"),
+            children: [
+              {
+                path: "/level1-1-1-1",
+                meta: { name: "层级1-1-1-1" },
+                component: () => import("@/components/level.vue")
+              }
+            ]
+          }
+        ]
       },
       {
         path: "/level1-2",
-        name: "level1-2",
         meta: { name: "层级1-2" },
         component: () => import("@/components/level.vue")
+      }
+    ]
+  },
+  {
+    path: "*",
+    component: main,
+    meta: { hidden: true },
+    children: [
+      {
+        path: "",
+        component: () => import("@/components/404.vue")
       }
     ]
   }
@@ -119,32 +139,36 @@ var routes = [
   var isAdmin = store.state.user.user_id == 1;
   permissions(routes);
   function permissions(routers) {
-    routers.map(router => {
+    routers.map((router, index) => {
       router.meta = router.meta || {};
       if (router.children) {
         permissions(router.children);
       }
       if (isAdmin && router.meta) {
         //管理员都为true
-        router.meta.hasRights = true;
+        // router.meta.hasRights = true;
         return false;
       }
       var routerRights = router.meta.p;
       if (routerRights) {
         routerRights = routerRights.split(",");
       } else {
-        router.meta.hasRights = true;
+        // router.meta.hasRights = true;
         return false;
       }
-      router.meta.hasRights = false;
+      var hasRight = false;
 
       routerRights.map(rights => {
         if (userRights.indexOf(rights) != -1) {
-          router.meta.hasRights = true;
+          hasRight = true;
         }
       });
+      if (!hasRight) {
+        routers.splice(index, 1);
+      }
     });
   }
+  console.log(routes);
 })();
 
 /**
