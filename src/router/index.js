@@ -27,7 +27,6 @@ var routes = [
   },
   {
     path: "/login",
-    hidden: true,
     meta: { hidden: true },
     component: () => import("@/views/login.vue")
   },
@@ -197,14 +196,14 @@ router.beforeEach((to, from, next) => {
     return false;
   }
   if (store.getters.isLogin && localStorage.CCCTSUSER) {
-    if (to.name == "login") {
+    if (to.path == "/login") {
       next({
         path: "/"
       });
     }
     next();
   } else {
-    if (to.name != "login") {
+    if (to.path != "/login") {
       Message({
         showClose: true,
         message: "请重新登录！"
