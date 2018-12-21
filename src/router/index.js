@@ -131,8 +131,8 @@ var routes = [
 
 /*
  * 验证权限
- * 传入路由，递归判断meta中的p  如果存在于store（vuex）中存储的用户权限，
- * 动态设置 meta的 hasRights为true，否则为false
+ * 传入路由，递归判断meta中的p  是否存在于store（vuex）中存储的用户权限，
+ * 如果不存在，删除路由
  */
 (function() {
   var userRights = store.state.user.rights;
@@ -168,7 +168,6 @@ var routes = [
       }
     });
   }
-  console.log(routes);
 })();
 
 /**
